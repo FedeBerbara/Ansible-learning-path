@@ -1,0 +1,40 @@
+-
+  name: Playbook to change file and directory permissions
+  hosts: all
+  become: yes
+  vars:
+    DIR: '{{ target_dir }}'
+    FILE: '{{ target_file }}'
+    PERMISSIONS: '{{ number }}'
+    OWNER: '{{ target_owner }}'
+    GROUP: '{{ target_group }}'
+
+  tasks:
+
+    - name: Checking if the directory exists
+      stat:
+        path: '{{ DIR }}'
+      register: dir_status
+
+    - name: Checking if the file exists
+      stat:
+        path: '{{ FILE }}'
+      register: file_status
+
+    - name: Report if directory exists
+      debug:
+        msg: "Directory {{ DIR }} is present on the server"
+      when: dir_status.stat.exists and dir_status.stat.isdir
+
+    - name: Report if file exists
+      debug:
+        msg: "File {{ FILE }} is present on the server"
+      when: file_status.stat.exists
+
+    - name: Applying new permissions
+      file:
+          path: '{{ DIR }}/{{ FILE }}'
+          state: file
+          mode: '0{{ PERMISSIONS }}'
+          owner: '{{ OWNER }}'
+          group: '{{ GROUP }}'
