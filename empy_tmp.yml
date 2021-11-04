@@ -1,0 +1,30 @@
+--- 
+- 
+  name: "Erase all the temporary files"
+  become: true
+  hosts: all
+
+  tasks: 
+
+    - name: Collecting directory content
+      find:
+        paths: /tmp_test/
+        patterns: '*'
+        hidden: yes
+      register: directory_content_result
+
+    - name: Collecting subdirectories
+      find:
+        paths: /tmp_test/
+        patterns: '*'
+        hidden: yes
+        file_type: directory
+      register: subdirectory_content_result  
+
+    - name: Cleaning up directory
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: 
+        - "{{ directory_content_result.files }}"
+        - "{{ subdirectory_content_result.files}}"
