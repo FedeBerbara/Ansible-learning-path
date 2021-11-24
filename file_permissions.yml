@@ -9,32 +9,45 @@
     OWNER: '{{ target_owner }}'
     GROUP: '{{ target_group }}'
 
-  tasks:
+  tasks: 
+
+    - name: Checking that it is not a system mount point
+      fail: 
+        msg: "You can not change permissions on system mount points, please contact to de server administrator"
+      when: DIR in ["/boot", "/etc", "/var", "/tmp", "/usr", "/", "/opt"]
 
     - name: Checking if the directory exists
-      stat:
+      stat: 
         path: '{{ DIR }}'
       register: dir_status
 
     - name: Checking if the file exists
-      stat:
+      stat: 
         path: '{{ FILE }}'
       register: file_status
 
-    - name: Report if directory exists
-      debug:
+    - name: Report if directory exists 
+      debug: 
         msg: "Directory {{ DIR }} is present on the server"
-      when: dir_status.stat.exists and dir_status.stat.isdir
+      when: dir_status.stat.exists
 
     - name: Report if file exists
       debug:
-        msg: "File {{ FILE }} is present on the server"
+        msg: "File {{ FILE }} is present on the server" 
       when: file_status.stat.exists
 
     - name: Applying new permissions
-      file:
+      file: 
           path: '{{ DIR }}/{{ FILE }}'
           state: file
           mode: '0{{ PERMISSIONS }}'
           owner: '{{ OWNER }}'
           group: '{{ GROUP }}'
+
+    - name: Applying permissions recursively
+      file: 
+          path: '{{ DIR }}'
+          mode: '0{{ PERMISSIONS }}'
+          owner: '{{ OWNER }}'
+          group: '{{ GROUP }}'
+          recurse: yes
